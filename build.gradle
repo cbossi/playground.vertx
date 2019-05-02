@@ -1,5 +1,6 @@
 plugins {
   id 'java'
+  id 'application'
 }
 
 group = 'ch.cbossi'
@@ -19,3 +20,5 @@ dependencies {
   implementation "io.vertx:vertx-web:$vertxVersion"
   implementation "io.vertx:vertx-config:$vertxVersion"
 }
+
+mainClassName = 'ch.cbossi.playground.vertx.VertxPlaygroundApplication'
