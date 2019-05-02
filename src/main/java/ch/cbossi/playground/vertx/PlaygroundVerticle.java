@@ -27,7 +27,7 @@ class PlaygroundVerticle extends AbstractVerticle {
   public void start(Future<Void> future) {
     httpServer = vertx.createHttpServer()
         .requestHandler(router())
-        .listen(8080, httpServer -> {
+        .listen(config().getInteger("http.port"), httpServer -> {
           if (httpServer.succeeded()) {
             future.complete();
           } else {

@@ -17,4 +17,5 @@ project.ext {
 dependencies {
   implementation "io.vertx:vertx-core:$vertxVersion"
   implementation "io.vertx:vertx-web:$vertxVersion"
+  implementation "io.vertx:vertx-config:$vertxVersion"
 }
