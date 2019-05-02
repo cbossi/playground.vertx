@@ -13,12 +13,22 @@ repositories {
 
 project.ext {
   vertxVersion = '3.7.0'
+  junitVersion = '5.3.2'
 }
 
 dependencies {
   implementation "io.vertx:vertx-core:$vertxVersion"
   implementation "io.vertx:vertx-web:$vertxVersion"
   implementation "io.vertx:vertx-config:$vertxVersion"
+
+  testImplementation "org.assertj:assertj-core:3.12.2"
+  testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+  testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+  testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }
 
 mainClassName = 'ch.cbossi.playground.vertx.VertxPlaygroundApplication'
+
+test {
+  useJUnitPlatform()
+}
