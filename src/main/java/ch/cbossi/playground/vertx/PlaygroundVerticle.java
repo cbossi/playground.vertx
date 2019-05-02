@@ -6,12 +6,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
-import static ch.cbossi.playground.vertx.PlaygroundController.NAME_PARAM;
-import static ch.cbossi.playground.vertx.Uris.pathParam;
+import static ch.cbossi.playground.vertx.PlaygroundController.GREETING_URL;
 
 class PlaygroundVerticle extends AbstractVerticle {
-
-  private static final String GREETING_URL = "/greetings/" + pathParam(NAME_PARAM);
 
   private final Vertx vertx;
   private final PlaygroundController controller;
