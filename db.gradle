@@ -19,6 +19,17 @@ dependencies {
 
 def dbUrl = "jdbc:postgresql://localhost:5432/$dbName"
 
+flyway {
+  url = dbUrl
+  user = dbUser
+  password = dbPassword
+  schemas = [dbSchema]
+
+  flywayMigrate {
+    ignoreFutureMigrations = false
+  }
+}
+
 jooq {
   Db(sourceSets.main) {
     jdbc {
@@ -37,6 +48,7 @@ jooq {
       database {
         name = 'org.jooq.meta.postgres.PostgresDatabase'
         inputSchema = dbSchema
+        excludes = 'flyway_schema_history'
       }
       generate {
         pojos = true
@@ -61,6 +73,10 @@ sourceSets {
 }
 
 generateDbJooqSchemaSource {
+  dependsOn flywayMigrate
+
+  inputs.dir "src/main/resources/db/migration"
+
   doFirst {
     project.file(jooqGeneratorOutputDir).deleteDir()
   }
