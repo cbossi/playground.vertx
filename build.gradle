@@ -21,6 +21,9 @@ dependencies {
   implementation "io.vertx:vertx-web:$vertxVersion"
   implementation "io.vertx:vertx-web-client:$vertxVersion"
   implementation "io.vertx:vertx-config:$vertxVersion"
+  
+  runtimeOnly "org.postgresql:postgresql:42.2.5"
+  implementation "org.jooq:jooq:3.11.11"
 
   testImplementation "org.assertj:assertj-core:3.12.2"
   testImplementation "io.vertx:vertx-unit:$vertxVersion"
