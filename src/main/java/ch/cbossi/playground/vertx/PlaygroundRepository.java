@@ -1,5 +1,6 @@
 package ch.cbossi.playground.vertx;
 
+import ch.cbossi.playground.vertx.tables.pojos.Person;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -8,8 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
+import static ch.cbossi.playground.vertx.Tables.PERSON;
 
 class PlaygroundRepository {
 
@@ -32,10 +32,10 @@ class PlaygroundRepository {
     }
   }
 
-  public String getGreeting(String username) {
-    return db.select(field("name"))
-        .from(table("vertx.person"))
-        .where(field("username").eq(username))
-        .fetchOneInto(String.class);
+  public Person getGreeting(String username) {
+    return db.select(PERSON.NAME)
+        .from(PERSON)
+        .where(PERSON.USERNAME.eq(username))
+        .fetchOneInto(Person.class);
   }
 }

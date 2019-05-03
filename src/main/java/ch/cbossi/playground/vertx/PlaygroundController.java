@@ -1,5 +1,6 @@
 package ch.cbossi.playground.vertx;
 
+import ch.cbossi.playground.vertx.tables.pojos.Person;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
@@ -17,9 +18,9 @@ class PlaygroundController {
   }
 
   public void greeting(RoutingContext routingContext) {
-    String username = routingContext.request().getParam(NAME_PARAM);
-    String name = this.repository.getGreeting(username);
-    GreetingTO greeting = new GreetingTO("Hello " + (name != null ? name : username));
+    String name = routingContext.request().getParam(NAME_PARAM);
+    Person person = this.repository.getGreeting(name);
+    GreetingTO greeting = new GreetingTO("Hello " + (person != null ? person.getName() : name));
 
     routingContext.response()
         .putHeader("content-type", "application/json")
