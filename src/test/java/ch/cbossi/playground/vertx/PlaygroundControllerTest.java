@@ -33,7 +33,7 @@ class PlaygroundControllerTest {
   }
 
   @Test
-  void testGreeting(Vertx vertx, VertxTestContext testContext) throws InterruptedException {
+  void testGreeting(VertxTestContext testContext) {
     webClient.get(createUri(PlaygroundController.GREETING_URL, Map.of(NAME_PARAM, "Vert.x")))
         .send(testContext.succeeding(response -> testContext.verify(() -> {
           GreetingTO greeting = response.bodyAsJson(GreetingTO.class);
