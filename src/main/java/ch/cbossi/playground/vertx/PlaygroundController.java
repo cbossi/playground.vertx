@@ -4,6 +4,8 @@ import ch.cbossi.playground.vertx.tables.pojos.Person;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
+import javax.inject.Inject;
+
 import static ch.cbossi.playground.vertx.Uris.pathParam;
 
 class PlaygroundController {
@@ -11,16 +13,19 @@ class PlaygroundController {
   static final String NAME_PARAM = "name";
   static final String GREETING_URL = "/greetings/" + pathParam(NAME_PARAM);
 
+  private final PlaygroundService service;
   private final PlaygroundRepository repository;
 
-  PlaygroundController() {
-    this.repository = new PlaygroundRepository();
+  @Inject
+  PlaygroundController(PlaygroundService service, PlaygroundRepository repository) {
+    this.service = service;
+    this.repository = repository;
   }
 
   public void greeting(RoutingContext routingContext) {
     String name = routingContext.request().getParam(NAME_PARAM);
     Person person = this.repository.getGreeting(name);
-    GreetingTO greeting = new GreetingTO("Hello " + (person != null ? person.getName() : name));
+    GreetingTO greeting = new GreetingTO(service.getGreeting() + (person != null ? person.getName() : name));
 
     routingContext.response()
         .putHeader("content-type", "application/json")

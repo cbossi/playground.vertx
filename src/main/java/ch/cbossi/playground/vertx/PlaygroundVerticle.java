@@ -6,6 +6,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
+import javax.inject.Inject;
+
 import static ch.cbossi.playground.vertx.PlaygroundController.GREETING_URL;
 
 class PlaygroundVerticle extends AbstractVerticle {
@@ -15,9 +17,10 @@ class PlaygroundVerticle extends AbstractVerticle {
 
   private HttpServer httpServer;
 
-  PlaygroundVerticle(Vertx vertx) {
+  @Inject
+  public PlaygroundVerticle(Vertx vertx, PlaygroundController controller) {
     this.vertx = vertx;
-    this.controller = new PlaygroundController();
+    this.controller = controller;
   }
 
   @Override
