@@ -7,6 +7,7 @@ import com.google.inject.util.Modules;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Vertx;
 import io.vertx.core.*;
+import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,8 @@ class ApplicationInitializer {
   public void deploy() {
     ConfigRetriever.create(vertx).getConfig(config -> {
       logApplicationStart();
-      Verticle verticle = createInjector().getInstance(PlaygroundVerticle.class);
+      vertx.getOrCreateContext();
+      Verticle verticle = createInjector(config.result()).getInstance(PlaygroundVerticle.class);
       Handler<AsyncResult<String>> completionHandler = this.completionHandler.orElseGet(logVerticleDeploymentFinished(verticle));
       vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config.result()), completionHandler);
     });
@@ -78,12 +80,12 @@ class ApplicationInitializer {
     };
   }
 
-  private Injector createInjector() {
-    return Guice.createInjector(createModule());
+  private Injector createInjector(JsonObject config) {
+    return Guice.createInjector(createModule(config));
   }
 
-  private Module createModule() {
-    Module module = new PlaygroundModule(this.vertx);
+  private Module createModule(JsonObject config) {
+    Module module = new PlaygroundModule(this.vertx, config);
     return hasOverrides() ? Modules.override(module).with(overrides) : module;
   }
 
