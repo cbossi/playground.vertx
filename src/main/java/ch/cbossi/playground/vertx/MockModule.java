@@ -1,8 +1,6 @@
 package ch.cbossi.playground.vertx;
 
-import com.google.inject.AbstractModule;
-
-class MockModule extends AbstractModule {
+class MockModule extends NamedModule {
 
   @Override
   protected void configure() {

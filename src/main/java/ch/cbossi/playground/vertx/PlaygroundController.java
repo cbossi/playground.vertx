@@ -5,8 +5,10 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
 import javax.inject.Inject;
+import java.util.logging.Logger;
 
 import static ch.cbossi.playground.vertx.Uris.pathParam;
+import static java.lang.String.format;
 
 class PlaygroundController {
 
@@ -15,15 +17,18 @@ class PlaygroundController {
 
   private final PlaygroundService service;
   private final PlaygroundRepository repository;
+  private final Logger logger;
 
   @Inject
-  PlaygroundController(PlaygroundService service, PlaygroundRepository repository) {
+  PlaygroundController(PlaygroundService service, PlaygroundRepository repository, Logger logger) {
     this.service = service;
     this.repository = repository;
+    this.logger = logger;
   }
 
   public void greeting(RoutingContext routingContext) {
     String name = routingContext.request().getParam(NAME_PARAM);
+    logger.info(format("Fetch greeting for %s.", name));
     Person person = this.repository.getGreeting(name);
     GreetingTO greeting = new GreetingTO(service.getGreeting() + (person != null ? person.getName() : name));
 

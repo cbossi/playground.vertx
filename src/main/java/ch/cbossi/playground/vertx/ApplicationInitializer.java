@@ -10,16 +10,20 @@ import io.vertx.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 
 class ApplicationInitializer {
 
-  private static final Handler<AsyncResult<String>> NO_OPS_COMPLETION_HANDLER = result -> {
-  };
+  private static final Logger LOGGER = Logger.getLogger(ApplicationInitializer.class.getName());
 
   private final Vertx vertx;
   private final List<Module> overrides;
-  private Handler<AsyncResult<String>> completionHandler;
+  private Optional<Handler<AsyncResult<String>>> completionHandler;
 
   public static ApplicationInitializer of(Vertx vertx) {
     return new ApplicationInitializer(vertx);
@@ -28,11 +32,11 @@ class ApplicationInitializer {
   private ApplicationInitializer(Vertx vertx) {
     this.vertx = vertx;
     this.overrides = new ArrayList<>();
-    this.completionHandler = NO_OPS_COMPLETION_HANDLER;
+    this.completionHandler = Optional.empty();
   }
 
   public ApplicationInitializer withCompletionHandler(Handler<AsyncResult<String>> completionHandler) {
-    this.completionHandler = completionHandler;
+    this.completionHandler = Optional.of(completionHandler);
     return this;
   }
 
@@ -50,9 +54,28 @@ class ApplicationInitializer {
 
   public void deploy() {
     ConfigRetriever.create(vertx).getConfig(config -> {
+      logApplicationStart();
       Verticle verticle = createInjector().getInstance(PlaygroundVerticle.class);
+      Handler<AsyncResult<String>> completionHandler = this.completionHandler.orElseGet(logVerticleDeploymentFinished(verticle));
       vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config.result()), completionHandler);
     });
+  }
+
+  private void logApplicationStart() {
+    if (hasOverrides()) {
+      String overrideModules = overrides.stream()
+          .map(Module::toString)
+          .collect(joining(",", "[", "]"));
+      LOGGER.info("Starting application with the following override-modules: " + overrideModules);
+    } else {
+      LOGGER.info("Starting application without override-modules.");
+    }
+  }
+
+  private Supplier<Handler<AsyncResult<String>>> logVerticleDeploymentFinished(Verticle verticle) {
+    return () -> result -> {
+      LOGGER.info(format("Finished deploying verticle %s: %s", verticle.getClass().getSimpleName(), result.result()));
+    };
   }
 
   private Injector createInjector() {
@@ -61,6 +84,10 @@ class ApplicationInitializer {
 
   private Module createModule() {
     Module module = new PlaygroundModule(this.vertx);
-    return !overrides.isEmpty() ? Modules.override(module).with(overrides) : module;
+    return hasOverrides() ? Modules.override(module).with(overrides) : module;
+  }
+
+  private boolean hasOverrides() {
+    return !this.overrides.isEmpty();
   }
 }
