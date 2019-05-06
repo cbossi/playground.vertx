@@ -1,0 +1,56 @@
+/**
+ * Create and configure a separate source set for integration tests:
+ * https://www.michael-bull.com/blog/2016/06/04/separating-integration-and-unit-tests-with-gradle
+ */
+
+/**
+ * Required in order to access the project's external dependencies.
+ */
+configurations {
+  inttestImplementation.extendsFrom testImplementation
+  inttestRuntime.extendsFrom testRuntime
+  inttestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+sourceSets {
+  inttest {
+    java.srcDir file('src/inttest/java')
+    resources.srcDir file('src/inttest/resources')
+
+    /**
+     * Required to access classes from the main and test source sets.
+     */
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+  }
+}
+
+task intTest(type: Test) {
+  useJUnitPlatform()
+
+  group = LifecycleBasePlugin.VERIFICATION_GROUP
+  description = 'Runs the integration tests.'
+
+  testClassesDirs = sourceSets.inttest.output.classesDirs
+  classpath = sourceSets.inttest.runtimeClasspath
+
+  mustRunAfter tasks.test
+}
+
+check.dependsOn intTest
+
+
+/**
+ * IntelliJ Setup
+ */
+apply plugin: 'idea'
+
+idea {
+  module {
+    configurations.inttestImplementation.canBeResolved = true
+
+    testSourceDirs += project.sourceSets.inttest.java.srcDirs
+    testSourceDirs += project.sourceSets.inttest.resources.srcDirs
+    scopes.TEST.plus += [configurations.inttestImplementation]
+  }
+}
