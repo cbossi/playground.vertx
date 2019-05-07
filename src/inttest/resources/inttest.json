@@ -1,0 +1,6 @@
+{
+  "http.port": 8081,
+  "db": {
+    "url": "jdbc:postgresql://localhost:5432/playground_test"
+  }
+}

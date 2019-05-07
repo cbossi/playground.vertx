@@ -1,8 +1,6 @@
 package ch.cbossi.playground.vertx;
 
 
-import io.vertx.config.ConfigRetriever;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -21,27 +19,22 @@ public abstract class IntegrationTestCase {
 
   @BeforeAll
   static void setup(Vertx vertx, VertxTestContext testContext) {
-    ConfigRetriever.create(vertx).getConfig(config -> {
-      migrateDb(config);
-      startApplication(vertx, testContext);
-      webClient = createWebClient(vertx);
-    });
+    ApplicationInitializer.of(vertx)
+        .withCompletionHandler(testContext.completing())
+        .withOverride(new MockModule())
+        .withConfigFile("inttest.json")
+        .onBeforeStart(IntegrationTestCase::migrateDb)
+        .deploy();
+    webClient = createWebClient(vertx);
   }
 
-  private static void migrateDb(AsyncResult<JsonObject> config) {
+  private static void migrateDb(JsonObject config) {
     flyway = new Flyway();
-    DbConfig dbConfig = DbConfig.fromRootConfig(config.result());
+    DbConfig dbConfig = DbConfig.fromRootConfig(config);
     flyway.setDataSource(dbConfig.getUrl(), dbConfig.getUsername(), dbConfig.getPassword());
     flyway.setSchemas(SCHEMA);
     flyway.clean();
     flyway.migrate();
-  }
-
-  private static void startApplication(Vertx vertx, VertxTestContext testContext) {
-    ApplicationInitializer.of(vertx)
-        .withCompletionHandler(testContext.completing())
-        .withOverride(new MockModule())
-        .deploy();
   }
 
   private static WebClient createWebClient(Vertx vertx) {

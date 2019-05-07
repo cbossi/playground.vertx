@@ -5,6 +5,8 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
@@ -12,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -24,6 +27,8 @@ class ApplicationInitializer {
 
   private final Vertx vertx;
   private final List<Module> overrides;
+  private final List<String> configFiles;
+  private Consumer<JsonObject> onBeforeStart;
   private Optional<Handler<AsyncResult<String>>> completionHandler;
 
   public static ApplicationInitializer of(Vertx vertx) {
@@ -33,12 +38,10 @@ class ApplicationInitializer {
   private ApplicationInitializer(Vertx vertx) {
     this.vertx = vertx;
     this.overrides = new ArrayList<>();
+    this.configFiles = new ArrayList<>();
+    this.onBeforeStart = (config) -> {
+    };
     this.completionHandler = Optional.empty();
-  }
-
-  public ApplicationInitializer withCompletionHandler(Handler<AsyncResult<String>> completionHandler) {
-    this.completionHandler = Optional.of(completionHandler);
-    return this;
   }
 
   public ApplicationInitializer withOverrideIf(boolean condition, Supplier<Module> moduleSupplier) {
@@ -53,8 +56,24 @@ class ApplicationInitializer {
     return this;
   }
 
+  public ApplicationInitializer withConfigFile(String configFilePath) {
+    configFiles.add(configFilePath);
+    return this;
+  }
+
+  public ApplicationInitializer withCompletionHandler(Handler<AsyncResult<String>> completionHandler) {
+    this.completionHandler = Optional.of(completionHandler);
+    return this;
+  }
+
+  public ApplicationInitializer onBeforeStart(Consumer<JsonObject> onBeforeStart) {
+    this.onBeforeStart = onBeforeStart;
+    return this;
+  }
+
   public void deploy() {
-    ConfigRetriever.create(vertx).getConfig(config -> {
+    ConfigRetriever.create(vertx, createConfigOptions()).getConfig(config -> {
+      onBeforeStart.accept(config.result());
       logApplicationStart();
       Verticle verticle = createInjector(config.result()).getInstance(PlaygroundVerticle.class);
       Handler<AsyncResult<String>> completionHandler = this.completionHandler.orElseGet(logVerticleDeploymentFinished(verticle));
@@ -62,15 +81,28 @@ class ApplicationInitializer {
     });
   }
 
+  private ConfigRetrieverOptions createConfigOptions() {
+    ConfigRetrieverOptions options = new ConfigRetrieverOptions().setIncludeDefaultStores(true);
+    configFiles.stream()
+        .map(this::createFileConfigStore)
+        .forEach(options::addStore);
+    return options;
+  }
+
+  private ConfigStoreOptions createFileConfigStore(String configFilePath) {
+    ConfigStoreOptions fileStore = new ConfigStoreOptions()
+        .setType("file")
+        .setConfig(new JsonObject().put("path", configFilePath));
+    return fileStore;
+  }
+
   private void logApplicationStart() {
-    if (hasOverrides()) {
-      String overrideModules = overrides.stream()
-          .map(Module::toString)
-          .collect(joining(",", "[", "]"));
-      LOGGER.info("Starting application with the following override-modules: " + overrideModules);
-    } else {
-      LOGGER.info("Starting application without override-modules.");
-    }
+    String overridesAsString = overrides.stream()
+        .map(Module::toString)
+        .collect(joining(",", "[", "]"));
+    String configFilesAsString = configFiles.stream()
+        .collect(joining(",", "[", "]"));
+    LOGGER.info(format("Starting application with module overrides %s and additional config files %s.", overridesAsString, configFilesAsString));
   }
 
   private Supplier<Handler<AsyncResult<String>>> logVerticleDeploymentFinished(Verticle verticle) {
@@ -85,10 +117,7 @@ class ApplicationInitializer {
 
   private Module createModule(JsonObject config) {
     Module module = new PlaygroundModule(this.vertx, config);
-    return hasOverrides() ? Modules.override(module).with(overrides) : module;
+    return !this.overrides.isEmpty() ? Modules.override(module).with(overrides) : module;
   }
 
-  private boolean hasOverrides() {
-    return !this.overrides.isEmpty();
-  }
 }
