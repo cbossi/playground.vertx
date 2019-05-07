@@ -5,9 +5,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 import javax.inject.Inject;
 
+import static ch.cbossi.playground.vertx.PlaygroundController.GREETINGS_URL;
 import static ch.cbossi.playground.vertx.PlaygroundController.GREETING_URL;
 
 class PlaygroundVerticle extends AbstractVerticle {
@@ -38,6 +40,8 @@ class PlaygroundVerticle extends AbstractVerticle {
 
   private Router router() {
     Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
+    router.post(GREETINGS_URL).handler(controller::create);
     router.get(GREETING_URL).handler(controller::greeting);
     return router;
   }

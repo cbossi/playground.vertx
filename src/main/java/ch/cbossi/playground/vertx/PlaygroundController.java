@@ -13,7 +13,8 @@ import static java.lang.String.format;
 class PlaygroundController {
 
   static final String NAME_PARAM = "name";
-  static final String GREETING_URL = "/greetings/" + pathParam(NAME_PARAM);
+  static final String GREETINGS_URL = "/greetings/";
+  static final String GREETING_URL = GREETINGS_URL + pathParam(NAME_PARAM);
 
   private final PlaygroundService service;
   private final PlaygroundRepository repository;
@@ -24,6 +25,16 @@ class PlaygroundController {
     this.service = service;
     this.repository = repository;
     this.logger = logger;
+  }
+
+  public void create(RoutingContext routingContext) {
+    Person person = routingContext.getBodyAsJson().mapTo(Person.class);
+    Person persistedPerson = repository.insert(person);
+
+    routingContext.response()
+        .putHeader("content-type", "application/json")
+        .setStatusCode(200)
+        .end(Json.encodePrettily(persistedPerson));
   }
 
   public void greeting(RoutingContext routingContext) {
