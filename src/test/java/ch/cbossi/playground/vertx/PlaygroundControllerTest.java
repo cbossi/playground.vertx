@@ -7,6 +7,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,21 +25,21 @@ class PlaygroundControllerTest {
 
   private static final Set<Person> PERSONS = Set.of(new Person().setUsername("test").setName("Test User"));
 
-  private static WebClient webClient;
+  private WebClient webClient;
 
   @BeforeEach
-  void deployVerticle(Vertx vertx, VertxTestContext testContext) {
+  void startApplication(Vertx vertx, VertxTestContext testContext) {
     ApplicationInitializer.of(vertx)
         .withCompletionHandler(testContext.completing())
         .withOverride(new MockModule())
         .withOverride(singleBinding(PlaygroundRepository.class, new PlaygroundRepositoryMock(PERSONS)))
         .deploy();
-    webClient = createWebClient(vertx);
   }
 
-  private static WebClient createWebClient(Vertx vertx) {
+  @BeforeEach
+  void createWebClient(Vertx vertx) {
     WebClientOptions options = new WebClientOptions().setDefaultPort(8080).setDefaultHost("localhost");
-    return WebClient.create(vertx, options);
+    webClient = WebClient.create(vertx, options);
   }
 
   @Test
@@ -49,5 +50,10 @@ class PlaygroundControllerTest {
           assertThat(greeting.getGreeting()).isEqualTo("Hello mocked Test User");
           testContext.completeNow();
         })));
+  }
+
+  @AfterEach
+  void stopApplication(Vertx vertx) {
+    vertx.close();
   }
 }

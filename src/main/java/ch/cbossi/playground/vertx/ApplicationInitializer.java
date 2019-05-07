@@ -56,7 +56,6 @@ class ApplicationInitializer {
   public void deploy() {
     ConfigRetriever.create(vertx).getConfig(config -> {
       logApplicationStart();
-      vertx.getOrCreateContext();
       Verticle verticle = createInjector(config.result()).getInstance(PlaygroundVerticle.class);
       Handler<AsyncResult<String>> completionHandler = this.completionHandler.orElseGet(logVerticleDeploymentFinished(verticle));
       vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config.result()), completionHandler);

@@ -1,6 +1,7 @@
 package ch.cbossi.playground.vertx;
 
 
+import ch.cbossi.playground.vertx.PlaygroundController.GreetingTO;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -22,7 +23,7 @@ public class IntegrationTest {
   private static WebClient webClient;
 
   @BeforeEach
-  void deployVerticle(io.vertx.core.Vertx vertx, VertxTestContext testContext) {
+  void deployVerticle(Vertx vertx, VertxTestContext testContext) {
     ApplicationInitializer.of(vertx)
         .withCompletionHandler(testContext.completing())
         .withOverride(new MockModule())
@@ -39,7 +40,7 @@ public class IntegrationTest {
   void testGreeting(VertxTestContext testContext) {
     webClient.get(createUri(PlaygroundController.GREETING_URL, Map.of(NAME_PARAM, "max")))
         .send(testContext.succeeding(response -> testContext.verify(() -> {
-          PlaygroundController.GreetingTO greeting = response.bodyAsJson(PlaygroundController.GreetingTO.class);
+          GreetingTO greeting = response.bodyAsJson(GreetingTO.class);
           assertThat(greeting.getGreeting()).isEqualTo("Hello mocked Max Muster");
           testContext.completeNow();
         })));
