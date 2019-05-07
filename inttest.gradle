@@ -25,6 +25,16 @@ sourceSets {
   }
 }
 
+dependencies {
+  /**
+   * Sharing flyway version with the flyway gradle plugin is difficult, since variables cannot be used in plugins DSL:
+   * https://stackoverflow.com/a/37749402/6231489
+   * There would be a workaround, but a quite ugly/complex one:
+   * https://github.com/gradle/gradle/issues/1697#issuecomment-386824663
+   */
+  inttestImplementation "org.flywaydb:flyway-core:5.1.4"
+}
+
 task intTest(type: Test) {
   useJUnitPlatform()
 

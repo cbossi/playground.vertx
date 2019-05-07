@@ -2,9 +2,7 @@ package ch.cbossi.playground.vertx;
 
 
 import ch.cbossi.playground.vertx.PlaygroundController.GreetingTO;
-import io.vertx.core.Vertx;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
+import ch.cbossi.playground.vertx.tables.pojos.Person;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,30 +16,24 @@ import static ch.cbossi.playground.vertx.Uris.createUri;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(VertxExtension.class)
-public class IntegrationTest {
+public class IntegrationTest extends IntegrationTestCase {
 
-  private static WebClient webClient;
+  private static final String SAMPLE_USERNAME = "inttest";
+  private static final String SAMPLE_NAME = "Integration Test";
 
   @BeforeEach
-  void deployVerticle(Vertx vertx, VertxTestContext testContext) {
-    ApplicationInitializer.of(vertx)
-        .withCompletionHandler(testContext.completing())
-        .withOverride(new MockModule())
-        .deploy();
-    webClient = createWebClient(vertx);
-  }
-
-  private static WebClient createWebClient(Vertx vertx) {
-    WebClientOptions options = new WebClientOptions().setDefaultPort(8080).setDefaultHost("localhost");
-    return WebClient.create(vertx, options);
+  void insertData(VertxTestContext testContext) {
+    Person person = new Person().setUsername(SAMPLE_USERNAME).setName(SAMPLE_NAME);
+    webClient.post(PlaygroundController.GREETINGS_URL)
+        .sendJson(person, testContext.completing());
   }
 
   @Test
   void testGreeting(VertxTestContext testContext) {
-    webClient.get(createUri(PlaygroundController.GREETING_URL, Map.of(NAME_PARAM, "max")))
+    webClient.get(createUri(PlaygroundController.GREETING_URL, Map.of(NAME_PARAM, SAMPLE_USERNAME)))
         .send(testContext.succeeding(response -> testContext.verify(() -> {
           GreetingTO greeting = response.bodyAsJson(GreetingTO.class);
-          assertThat(greeting.getGreeting()).isEqualTo("Hello mocked Max Muster");
+          assertThat(greeting.getGreeting()).isEqualTo("Hello mocked " + SAMPLE_NAME);
           testContext.completeNow();
         })));
   }
