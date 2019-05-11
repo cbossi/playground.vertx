@@ -32,7 +32,6 @@ dependencies {
   implementation "com.google.inject:guice:4.2.2"
 
   testImplementation "org.assertj:assertj-core:3.12.2"
-  testImplementation "io.vertx:vertx-unit:$vertxVersion"
   testImplementation "io.vertx:vertx-junit5:$vertxVersion"
   testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
   testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
