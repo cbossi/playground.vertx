@@ -31,8 +31,8 @@ class PlaygroundControllerTest {
   void startApplication(Vertx vertx, VertxTestContext testContext) {
     ApplicationInitializer.of(vertx)
         .withCompletionHandler(testContext.completing())
-        .withOverride(new MockModule())
-        .withOverride(singleBinding(PlaygroundRepository.class, new PlaygroundRepositoryMock(PERSONS)))
+        .withModule(new MockModule())
+        .withModule(singleBinding(PlaygroundRepository.class, new PlaygroundRepositoryMock(PERSONS)))
         .deploy();
   }
 

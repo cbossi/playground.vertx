@@ -11,7 +11,7 @@ public class VertxPlaygroundApplication {
   public static void main(String[] args) {
     System.setProperty("vertx.disableDnsResolver", "true"); // see https://github.com/eclipse-vertx/vert.x/issues/2369#issuecomment-439722563
     ApplicationInitializer.of(Vertx.vertx())
-        .withOverrideIf(asList(args).contains(USE_MOCKS), MockModule::new)
+        .withModuleIf(asList(args).contains(USE_MOCKS), MockModule::new)
         .deploy();
   }
 

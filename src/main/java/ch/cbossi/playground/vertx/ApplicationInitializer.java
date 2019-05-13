@@ -26,7 +26,7 @@ class ApplicationInitializer {
   private static final Logger LOGGER = Logger.getLogger(ApplicationInitializer.class.getName());
 
   private final Vertx vertx;
-  private final List<Module> overrides;
+  private final List<Module> modules;
   private final List<String> configFiles;
   private Consumer<JsonObject> onBeforeStart;
   private Optional<Handler<AsyncResult<String>>> completionHandler;
@@ -37,22 +37,22 @@ class ApplicationInitializer {
 
   private ApplicationInitializer(Vertx vertx) {
     this.vertx = vertx;
-    this.overrides = new ArrayList<>();
+    this.modules = new ArrayList<>();
     this.configFiles = new ArrayList<>();
     this.onBeforeStart = (config) -> {
     };
     this.completionHandler = Optional.empty();
   }
 
-  public ApplicationInitializer withOverrideIf(boolean condition, Supplier<Module> moduleSupplier) {
+  public ApplicationInitializer withModuleIf(boolean condition, Supplier<Module> moduleSupplier) {
     if (condition) {
-      return withOverride(moduleSupplier.get());
+      return withModule(moduleSupplier.get());
     }
     return this;
   }
 
-  public ApplicationInitializer withOverride(Module module) {
-    this.overrides.add(module);
+  public ApplicationInitializer withModule(Module module) {
+    this.modules.add(module);
     return this;
   }
 
@@ -97,12 +97,12 @@ class ApplicationInitializer {
   }
 
   private void logApplicationStart() {
-    String overridesAsString = overrides.stream()
+    String modulesAsString = modules.stream()
         .map(Module::toString)
         .collect(joining(",", "[", "]"));
     String configFilesAsString = configFiles.stream()
         .collect(joining(",", "[", "]"));
-    LOGGER.info(format("Starting application with module overrides %s and additional config files %s.", overridesAsString, configFilesAsString));
+    LOGGER.info(format("Starting application with module overrides %s and additional config files %s.", modulesAsString, configFilesAsString));
   }
 
   private Supplier<Handler<AsyncResult<String>>> logVerticleDeploymentFinished(Verticle verticle) {
@@ -117,7 +117,7 @@ class ApplicationInitializer {
 
   private Module createModule(JsonObject config) {
     Module module = new PlaygroundModule(this.vertx, config);
-    return !this.overrides.isEmpty() ? Modules.override(module).with(overrides) : module;
+    return !this.modules.isEmpty() ? Modules.override(module).with(modules) : module;
   }
 
 }

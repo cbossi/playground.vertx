@@ -21,7 +21,7 @@ public abstract class IntegrationTestCase {
   static void setup(Vertx vertx, VertxTestContext testContext) {
     ApplicationInitializer.of(vertx)
         .withCompletionHandler(testContext.completing())
-        .withOverride(new MockModule())
+        .withModule(new MockModule())
         .withConfigFile("inttest.json")
         .onBeforeStart(IntegrationTestCase::migrateDb)
         .deploy();
