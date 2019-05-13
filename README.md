@@ -6,7 +6,6 @@ A sample project based on Java 11 using the following lightweight stack:
 - [Vert.x](https://vertx.io/docs)
   - [vertx-core](https://vertx.io/docs/vertx-core/java/)
   - [vertx-web](https://vertx.io/docs/vertx-web/java/)
-  - [vertx-web-cliet](https://vertx.io/docs/vertx-web-client/java/)
   - [vertx-config](https://vertx.io/docs/vertx-config/java/)
 - [Google Guice](https://github.com/google/guice/wiki/GettingStarted)
 - [Flyway](https://flywaydb.org/documentation)
@@ -16,6 +15,7 @@ For tests (unit and integration tests) the following additional libraries are us
 - [JUnit 5](https://junit.org/junit5/docs/current/user-guide/)
 - [Vert.x JUnit 5 integration](https://vertx.io/docs/vertx-junit5/java/)
 - [AssertJ](https://assertj.github.io/doc/)
+- [vertx-web-client](https://vertx.io/docs/vertx-web-client/java/)
 
 ## Usage
 
