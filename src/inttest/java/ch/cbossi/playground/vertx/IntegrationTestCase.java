@@ -17,14 +17,22 @@ public abstract class IntegrationTestCase {
   static WebClient webClient;
   private static Flyway flyway;
 
+  private static int applicationPort;
+
   @BeforeAll
   static void setup(Vertx vertx, VertxTestContext testContext) {
     ApplicationInitializer.of(vertx)
         .withCompletionHandler(testContext.completing())
         .withModule(new MockModule())
         .withConfigFile("inttest.json")
-        .onBeforeStart(IntegrationTestCase::migrateDb)
+        .onBeforeStart(IntegrationTestCase::onBeforeApplicationStart)
         .deploy();
+    webClient = createWebClient(vertx);
+  }
+
+  private static void onBeforeApplicationStart(Vertx vertx, JsonObject config) {
+    applicationPort = config.getInteger("http.port");
+    migrateDb(config);
     webClient = createWebClient(vertx);
   }
 
@@ -38,7 +46,7 @@ public abstract class IntegrationTestCase {
   }
 
   private static WebClient createWebClient(Vertx vertx) {
-    WebClientOptions options = new WebClientOptions().setDefaultPort(8081).setDefaultHost("localhost");
+    WebClientOptions options = new WebClientOptions().setDefaultPort(applicationPort).setDefaultHost("localhost");
     return WebClient.create(vertx, options);
   }
 

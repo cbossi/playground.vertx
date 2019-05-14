@@ -31,7 +31,7 @@ Integration tests can be executed against a database in a docker container in or
 - Start the docker container: `docker run -p 5433:5432 playground-inttest-db`
 - Run integration test(s) from within the IDE
 - If you want to debug: set a breakpoint in the test-method and execute: `psql -U playground -p 5433`. 
-- Stop the running database container: `docker container stop playground-inttest-db`
+- Stop the running database container: `docker container stop <container-name>`
 
 IMPORTANT HINT: When using Docker Toolbox mapped ports target to `192.168.99.100` instead of `localhost`. Therefore, the value of the `url` attribute in the file `v` has to be modified accordingly.   
 

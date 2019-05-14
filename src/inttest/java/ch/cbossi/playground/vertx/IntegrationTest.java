@@ -16,7 +16,7 @@ import static ch.cbossi.playground.vertx.Uris.createUri;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(VertxExtension.class)
-public class IntegrationTest extends IntegrationTestCase {
+class IntegrationTest extends IntegrationTestCase {
 
   private static final String SAMPLE_USERNAME = "inttest";
   private static final String SAMPLE_NAME = "Integration Test";

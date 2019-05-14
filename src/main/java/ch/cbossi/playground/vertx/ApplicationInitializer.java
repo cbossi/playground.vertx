@@ -14,7 +14,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -25,10 +25,13 @@ class ApplicationInitializer {
 
   private static final Logger LOGGER = Logger.getLogger(ApplicationInitializer.class.getName());
 
+  private static BiConsumer<Vertx, JsonObject> NULL_ON_BEFORE_HANDLER = (vertx, config) -> {
+  };
+
   private final Vertx vertx;
   private final List<Module> modules;
   private final List<String> configFiles;
-  private Consumer<JsonObject> onBeforeStart;
+  private BiConsumer<Vertx, JsonObject> onBeforeStart;
   private Optional<Handler<AsyncResult<String>>> completionHandler;
 
   public static ApplicationInitializer of(Vertx vertx) {
@@ -39,8 +42,7 @@ class ApplicationInitializer {
     this.vertx = vertx;
     this.modules = new ArrayList<>();
     this.configFiles = new ArrayList<>();
-    this.onBeforeStart = (config) -> {
-    };
+    this.onBeforeStart = NULL_ON_BEFORE_HANDLER;
     this.completionHandler = Optional.empty();
   }
 
@@ -66,14 +68,14 @@ class ApplicationInitializer {
     return this;
   }
 
-  public ApplicationInitializer onBeforeStart(Consumer<JsonObject> onBeforeStart) {
+  public ApplicationInitializer onBeforeStart(BiConsumer<Vertx, JsonObject> onBeforeStart) {
     this.onBeforeStart = onBeforeStart;
     return this;
   }
 
   public void deploy() {
     ConfigRetriever.create(vertx, createConfigOptions()).getConfig(config -> {
-      onBeforeStart.accept(config.result());
+      onBeforeStart.accept(vertx, config.result());
       logApplicationStart();
       Verticle verticle = createInjector(config.result()).getInstance(PlaygroundVerticle.class);
       Handler<AsyncResult<String>> completionHandler = this.completionHandler.orElseGet(logVerticleDeploymentFinished(verticle));
